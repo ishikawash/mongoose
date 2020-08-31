@@ -9643,20 +9643,23 @@ MG_INTERNAL void mg_handle_lock(struct mg_connection *nc, const char *path) {
   static const char *reply =
       "HTTP/1.1 207 Multi-Status\r\n"
       "Connection: close\r\n"
-      "Content-Type: text/xml; charset=utf-8\r\n\r\n"
+      "Content-Type: text/xml; charset=utf-8\r\n"
+      "Lock-Token: <%s>\r\n"
+      "\r\n"
       "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
       "<d:multistatus xmlns:d='DAV:'>\n"
       "<D:lockdiscovery>\n"
       "<D:activelock>\n"
       "<D:locktoken>\n"
-      "<D:href>\n"
-      "opaquelocktoken:%s%u"
-      "</D:href>"
+      "<D:href>%s</D:href>\n"
       "</D:locktoken>"
       "</D:activelock>\n"
       "</D:lockdiscovery>"
       "</d:multistatus>\n";
-  mg_printf(nc, reply, path, (unsigned int) mg_time());
+  char token[256];
+  memset(token, 0, sizeof(token));
+  snprintf(token, sizeof(token) - 1, "opaquelocktoken:%s%u", path, (unsigned int) mg_time());
+  mg_printf(nc, reply, token);
   nc->flags |= MG_F_SEND_AND_CLOSE;
 }
 #endif

@@ -24,10 +24,18 @@ int main(void) {
     return 1;
   }
 
+  char current_path[MAXPATHLEN];
+  if (getcwd(current_path, sizeof(current_path)) == NULL) {
+    perror("getcwd() failed");
+    return 1;
+  }
+
   // Set up HTTP server parameters
   mg_set_protocol_http_websocket(nc);
-  s_http_server_opts.document_root = ".";  // Serve current directory
+  s_http_server_opts.document_root = current_path;
   s_http_server_opts.enable_directory_listing = "yes";
+  s_http_server_opts.dav_document_root = s_http_server_opts.document_root;
+  s_http_server_opts.dav_auth_file = "-";
 
   for (;;) {
     mg_mgr_poll(&mgr, 1000);
